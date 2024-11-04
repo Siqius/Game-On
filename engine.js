@@ -19,11 +19,11 @@ class Engine {
     img.src = "./assets/mario.png";
     Engine.playerOne = new Player(300, 100, 50, 50, false, true, 10, 15, img);
     Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(300, 500, 50, 50, true, true, 10, 15, img)
+    Engine.playerTwo = new Player(300, 500, 50, 50, true, true, 10, 15, img);
     let img2 = new Image();
-    img2.src = "./assets/tile.png"
+    img2.src = "./assets/tile.png";;
     let img3 = new Image();
-    img3.src = "./assets/black.png"
+    img3.src = "./assets/black.png";
     new GameObject(300, 300, 50, 50, false, true, img2);
     new GameObject(350, 300, 50, 50, false, true, img2);
     new GameObject(400, 300, 50, 50, false, true, img2);
@@ -63,7 +63,7 @@ class Engine {
   }
 
   static superDraw(ctx) {
-    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height)
+    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
     Engine.gameObjects.forEach(object => {
       object.draw(ctx);
     });
@@ -86,7 +86,6 @@ class Engine {
         if (Engine.getTime() - Engine.timeSinceWorldSwitch < Engine.worldSwitchDelay) return;
         Engine.timeSinceWorldSwitch = Engine.getTime();
         Engine.active.xVel = 0;
-        Engine.active.yVel = 0;
         Engine.active = Engine.active.shadow ? Engine.playerOne : Engine.playerTwo;
       }
       if (button == Engine.jumpKey) {
@@ -150,7 +149,6 @@ class Engine {
         player.x < platform.x + platform.width &&
         player.x + player.width > platform.x;
 
-      // Check if player's head is touching the bottom of the platform within a small margin (y-axis)
       let isTouchingVertically =
         player.y <= platform.y + platform.height &&
         player.y >= platform.y + platform.height - 5; // 5 pixels as margin for standing

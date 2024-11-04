@@ -21,12 +21,9 @@ class Player extends GameObject {
   }
 
   update() {
-    if (this != Engine.active) return;
     this.yVel += 1 * this.gravityMultiplier;
     this.y += this.yVel > 0.5 || this.yVel < -0.5 ? this.yVel : 0;
     Engine.gameObjects.forEach(object => {
-      if (this.shadow) {
-      }
       if (Engine.isStandingOn(this, object)) {
         this.yVel = 0;
         this.y = !this.shadow ? object.y - this.height : object.y + object.height;

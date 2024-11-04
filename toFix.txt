@@ -1,1 +1,6 @@
 weird collision malfunction when switching worlds sometimes (unknown cause)
+FIXED (i think)
+
+rotate shadow objects 180 degrees
+
+switch player controls to Engine? (unneccessary to have 2 different control sets between characters) (fråga stefan)

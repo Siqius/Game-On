@@ -12,7 +12,10 @@ class GameObject {
   }
 
   draw(ctx) {
-    ctx.drawImage(this.activeImage, this.x, this.y, this.width, this.height)
+    if (this.shadow) {
+      ctx.drawImage(this.activeImage, this.x, this.y, this.width, this.height);
+    }
+    ctx.drawImage(this.activeImage, this.x, this.y, this.width, this.height);
   }
 
   update() {
@@ -26,8 +29,6 @@ class GameObject {
   }
 
   move(direction) {
-    if (direction === "left") this.xVel = -1;
-    if (direction === "right") this.xVel = 1;
-    this.x += Engine.active.speed * Engine.active.xVel
+    this.x += Engine.active.speed * Engine.active.xVel;
   }
 }
