@@ -1,56 +1,45 @@
 class Engine {
+  // declare static game variables
   static frameRate = 30;
+  static running = true;
   static canvas = document.querySelector("canvas");
   static ctx = Engine.canvas.getContext("2d");
   static players = [];
   static gameObjects = [];
-  static active;
-  static leftKey = "d";
-  static rightKey = "a";
-  static jumpKey = " ";
-  static switchKey = "q";
   static playerOne;
   static playerTwo;
+  static active;
   static timeSinceWorldSwitch = 0;
-  static worldSwitchDelay = 2000;
+  static worldSwitchDelay = 1000;
+  static worldSwitchTimeout = 1000;
+  static playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
+  static overworldCharacterSprites;
+  static shadowWorldCharacterSprites;
+  static overworldObjectSprites;
+  static shadowworldObjectSprites;
 
+  //static method to initialize the engine
   static init() {
-    let img = new Image();
-    img.src = "./assets/mario.png";
-    Engine.playerOne = new Player(300, 100, 50, 50, false, true, 10, 15, img);
+    Images.init();
+    console.log(Engine.overworldObjectSprites);
+    Level.load(0);
+    Engine.playerOne = new Player(300, 100, 50, 50, false, true, 10, 15, Engine.overworldCharacterSprites);
     Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(300, 500, 50, 50, true, true, 10, 15, img);
-    let img2 = new Image();
-    img2.src = "./assets/tile.png";;
-    let img3 = new Image();
-    img3.src = "./assets/black.png";
-    new GameObject(300, 300, 50, 50, false, true, img2);
-    new GameObject(350, 300, 50, 50, false, true, img2);
-    new GameObject(400, 300, 50, 50, false, true, img2);
-    new GameObject(450, 300, 50, 50, false, true, img2);
-    new GameObject(500, 300, 50, 50, false, true, img2);
-    new GameObject(550, 300, 50, 50, false, true, img2);
-    new GameObject(600, 300, 50, 50, false, true, img2);
-    new GameObject(650, 300, 50, 50, false, true, img2);
-    new GameObject(700, 300, 50, 50, false, true, img2);
-    new GameObject(300, 350, 50, 50, true, true, img3);
-    new GameObject(350, 350, 50, 50, true, true, img3);
-    new GameObject(400, 350, 50, 50, true, true, img3);
-    new GameObject(450, 350, 50, 50, true, true, img3);
-    new GameObject(500, 350, 50, 50, true, true, img3);
-    new GameObject(550, 350, 50, 50, true, true, img3);
-    new GameObject(600, 350, 50, 50, true, true, img3);
-    new GameObject(650, 350, 50, 50, true, true, img3);
-    new GameObject(700, 350, 50, 50, true, true, img3);
-    this.keyListeners();
+    Engine.playerTwo = new Player(300, 500, 50, 50, true, true, 10, 15, Engine.shadowWorldCharacterSprites);
+
+    //(temporary) create tiles for testing purposes
+
+    //initialize keylisteners and gameloop
+    Engine.keyListeners();
     Engine.gameLoop();
   }
 
+  //gameloop, self explanatory
   static gameLoop() {
     let start = Engine.getTime();
 
     Engine.superMove();
-    Engine.superDraw(Engine.ctx);
+    Engine.superRender(Engine.ctx);
 
     // calculate when next frame should be handled
     let end = Engine.getTime();
@@ -62,13 +51,13 @@ class Engine {
     return Date.now();
   }
 
-  static superDraw(ctx) {
+  static superRender(ctx) {
     ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
     Engine.gameObjects.forEach(object => {
-      object.draw(ctx);
+      object.render(ctx);
     });
     Engine.players.forEach(player => {
-      player.draw(ctx);
+      player.render(ctx);
     })
   }
 
@@ -81,43 +70,21 @@ class Engine {
   static keyListeners() {
     document.addEventListener("keydown", event => {
       let button = event.key;
+      if (!(button in Engine.playerControls.keys)) return;
 
-      if (button == Engine.switchKey) {
-        if (Engine.getTime() - Engine.timeSinceWorldSwitch < Engine.worldSwitchDelay) return;
-        Engine.timeSinceWorldSwitch = Engine.getTime();
-        Engine.active.xVel = 0;
-        Engine.active = Engine.active.shadow ? Engine.playerOne : Engine.playerTwo;
-      }
-      if (button == Engine.jumpKey) {
-        Engine.active.keys.jump = true;
-      }
-      if (button == Engine.leftKey) {
-        Engine.active.keys.left = true;
-        Engine.active.xVel = 1;
-      }
-      if (button == Engine.rightKey) {
-        Engine.active.keys.right = true;
-        Engine.active.xVel = -1;
-      }
-    })
+      Engine.players.forEach(player => {
+        player.keydown(Engine.playerControls.keys[button])
+      })
+    });
 
     document.addEventListener("keyup", event => {
       let button = event.key;
+      if (!(button in Engine.playerControls.keys)) return;
 
-      if (button == Engine.jumpKey) {
-        Engine.active.keys.jump = false;
-      }
-      if (button == Engine.leftKey) {
-        Engine.active.keys.left = false;
-        if (Engine.active.keys.right) return;
-        Engine.active.xVel = 0;
-      }
-      if (button == Engine.rightKey) {
-        Engine.active.keys.right = false;
-        if (Engine.active.keys.left) return;
-        Engine.active.xVel = 0;
-      }
-    })
+      Engine.players.forEach(player => {
+        player.keyup(Engine.playerControls.keys[button]);
+      })
+    });
   }
 
   static collision(o1, o2) {
@@ -151,7 +118,7 @@ class Engine {
 
       let isTouchingVertically =
         player.y <= platform.y + platform.height &&
-        player.y >= platform.y + platform.height - 5; // 5 pixels as margin for standing
+        player.y >= platform.y + platform.height - 25; // 5 pixels as margin
 
       return isOverlappingHorizontally && isTouchingVertically;
     }
@@ -163,8 +130,22 @@ class Engine {
 
     let isTouchingVertically =
       player.y + player.height >= platform.y &&
-      player.y + player.height <= platform.y + 5; // 5 pixels as margin for standing
+      player.y + player.height <= platform.y + 25; // 5 pixels as margin
 
-    return isOverlappingHorizontally && isTouchingVertically;
+    return isOverlappingHorizontally && isTouchingVertically && player.yVel >= 0;
+  }
+
+  static isCollidingWithWall(player, object) {
+    if (!(player.canCollide && object.canCollide)) return;
+    if (player.shadow != object.shadow) return;
+    let isOverlappingHorizontally =
+      player.x < object.x + object.width &&
+      player.x + player.width > object.x;
+
+    let isOverlappingVertically =
+      player.y < object.y + object.height &&
+      player.y + player.height > object.y;
+
+    return isOverlappingHorizontally && isOverlappingVertically;
   }
 }
