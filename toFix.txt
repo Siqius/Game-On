@@ -1,0 +1,3 @@
+change position of world depending on which one is active
+
+change keydown/keyup to key.lower
