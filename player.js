@@ -13,36 +13,11 @@ class Player extends GameObject {
   }
 
   //Handles gravity, collissions, jumping and moving
-  update() {
+  async update() {
     if (!Engine.running) return;
-    //gravity
-    this.yVel += 1 * this.gravityMultiplier;
-    this.y += this.yVel > 0.5 || this.yVel < -0.5 ? this.yVel : 0;
-    //collisions
-    Engine.gameObjects.forEach(object => {
-      if (Engine.isStandingOn(this, object)) {
-        this.yVel = 0;
-        this.y = !this.shadow ? object.y - this.height : object.y + object.height;
-        //jumping
-        if (Engine.playerControls.controls.jump) {
-          if (this == Engine.active) {
-            this.yVel -= this.jumpPower * this.gravityMultiplier;
-          }
-        }
-      }
-      if (object.shadow != this.shadow) return;
-      if (Engine.isCollidingWithWall(this, object)) {
 
-      }
-      //moving
-      object.x += this.speed * (this.xVel * -1)
-    })
-  }
-
-  //Handles every keydown event
-  keydown(action) {
-    if (this.shadow != Engine.active.shadow) return;
-    if (action == "swap") {
+    //checks for swap
+    if (Engine.playerControls.controls.swap) {
       if (Engine.getTime() - Engine.timeSinceWorldSwitch < Engine.worldSwitchDelay) return;
       Engine.running = false;
       setTimeout(() => {
@@ -54,36 +29,73 @@ class Player extends GameObject {
       Engine.active.yVel = 0;
       Engine.active = Engine.playerOne == Engine.active ? Engine.playerTwo : Engine.playerOne;
       Engine.active.xVel = tempxVel;
-    }
-    else if (action == "jump") {
-      Engine.playerControls.controls.jump = true;
-    }
-    else if (action == "left") {
-      Engine.playerControls.controls.left = true;
-      this.xVel = -1;
-    }
-    else if (action == "right") {
-      Engine.playerControls.controls.right = true;
-      this.xVel = 1;
-    }
-  }
 
-  //Handles every keyup event
-  keyup(action) {
-    if (action == "jump") {
-      Engine.playerControls.controls.jump = false;
-    }
+      while (true) {
+        let mult = 1
+        let range = 0;
 
-    else if (action == "left") {
-      Engine.playerControls.controls.left = false;
-      if (Engine.playerControls.controls.right) return;
-      this.xVel = 0;
+        if (Engine.active.shadow) {
+          mult = -1;
+          range = 400;
+        }
+
+        console.log(mult);
+        Engine.globalY += 20 * mult;
+
+        if (Math.abs(Engine.globalY) == range) {
+          break
+        }
+
+        await Engine.sleep(Engine.worldSwitchTimer / 100);
+      }
     }
 
-    else if (action == "right") {
-      Engine.playerControls.controls.right = false;
-      if (Engine.playerControls.controls.left) return;
-      this.xVel = 0;
+    //movement keys, if both are held down then dont move
+    if (Engine.playerControls.controls.left) this.xVel = -1;
+    else {
+      if (Engine.playerControls.controls.right) this.xVel = 1;
+      else this.xVel = 0;
+    }
+    if (Engine.playerControls.controls.right) this.xVel = 1;
+    else {
+      if (Engine.playerControls.controls.left) this.xVel = -1;
+      else this.xVel = 0;
+    }
+    if ((Engine.playerControls.controls.left && Engine.playerControls.controls.right) || (!Engine.playerControls.controls.left && !Engine.playerControls.controls.right)) this.xVel = 0;
+
+    //gravity
+    this.yVel += Engine.gravityStrength * this.gravityMultiplier;
+    this.y += this.yVel > 0.5 || this.yVel < -0.5 ? this.yVel : 0;
+    //collisions
+    let collissionDetectedThisFrame = false;
+    Engine.gameObjects.forEach(object => {
+      let collidingWithGround = false;
+      if (Engine.isStandingOn(this, object)) {
+        collidingWithGround = true;
+        this.yVel = 0;
+        this.y = !this.shadow ? object.y - this.height : object.y + object.height;
+        if (this != Engine.active) return;
+        //jumping
+        if (Engine.playerControls.controls.jump) {
+          this.yVel -= this.jumpPower * this.gravityMultiplier;
+        }
+      }
+      if (Engine.isCollidingWithWall(this, object)) {
+        collissionDetectedThisFrame = true;
+      }
+    })
+    if (this != Engine.active) return;
+    console.log(collissionDetectedThisFrame);
+    if (!collissionDetectedThisFrame) {
+      Engine.gameObjects.forEach(object => {
+        if (object.shadow != Engine.active.shadow) return;
+        object.x += this.speed * (this.xVel * -1);
+      })
+    } else if (collissionDetectedThisFrame) {
+      Engine.gameObjects.forEach(object => {
+        if (object.shadow != Engine.active.shadow) return;
+        object.x += this.speed * (this.xVel) * 1;
+      })
     }
   }
 }

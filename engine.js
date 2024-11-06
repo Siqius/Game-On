@@ -17,17 +17,27 @@ class Engine {
   static shadowWorldCharacterSprites;
   static overworldObjectSprites;
   static shadowworldObjectSprites;
+  static levelMap;
+  static globalY = 0;
+  static worldSwitchTimer = 2000;
+  static gravityStrength = 1;
+  static backgroundImage;
+  static shouldMoveTiles = true;
 
   //static method to initialize the engine
   static init() {
+    //load all images from sources
     Images.init();
-    console.log(Engine.overworldObjectSprites);
-    Level.load(0);
-    Engine.playerOne = new Player(300, 100, 50, 50, false, true, 10, 15, Engine.overworldCharacterSprites);
-    Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(300, 500, 50, 50, true, true, 10, 15, Engine.shadowWorldCharacterSprites);
+    //load the first level (will be revamped in the future)
+    Level.loadFromImage(1);
 
-    //(temporary) create tiles for testing purposes
+    Engine.backgroundImage = new Image();
+    Engine.backgroundImage.src = "./assets/background.png";
+
+    //create the two characters, set the first one to be active
+    Engine.playerOne = new Player(150, 100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
+    Engine.active = Engine.playerOne;
+    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
 
     //initialize keylisteners and gameloop
     Engine.keyListeners();
@@ -51,8 +61,12 @@ class Engine {
     return Date.now();
   }
 
+  static sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   static superRender(ctx) {
-    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
+    ctx.drawImage(Engine.backgroundImage, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
     Engine.gameObjects.forEach(object => {
       object.render(ctx);
     });
@@ -69,43 +83,18 @@ class Engine {
 
   static keyListeners() {
     document.addEventListener("keydown", event => {
-      let button = event.key;
+      let button = event.key.toLowerCase();
       if (!(button in Engine.playerControls.keys)) return;
 
-      Engine.players.forEach(player => {
-        player.keydown(Engine.playerControls.keys[button])
-      })
+      Engine.playerControls.controls[Engine.playerControls.keys[button]] = true;
     });
 
     document.addEventListener("keyup", event => {
-      let button = event.key;
+      let button = event.key.toLowerCase();
       if (!(button in Engine.playerControls.keys)) return;
 
-      Engine.players.forEach(player => {
-        player.keyup(Engine.playerControls.keys[button]);
-      })
+      Engine.playerControls.controls[Engine.playerControls.keys[button]] = false;
     });
-  }
-
-  static collision(o1, o2) {
-    return (o1.x + o1.width + (o2.speed * o2.xVel) >= o2.x &&
-      o1.x + (o2.speed * o2.xVel) <= o2.x + o2.width &&
-      o1.y + o1.height >= o2.y &&
-      o1.y <= o2.y + o2.height)
-  }
-
-  static collisionY(o1, o2) {
-    return (
-      o1.y < o2.y + o2.height &&
-      o1.y + o1.height > o2.y
-    );
-  }
-
-  static collisionX(o1, o2) {
-    return (
-      o1.x < o2.x + o2.width &&
-      o1.x + o1.width > o2.x
-    );
   }
 
   static isStandingOn(player, platform) {

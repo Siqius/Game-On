@@ -1,32 +1,33 @@
 class Level {
-  static levels = [...levelList]
-  /*
-  new Tile(300, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(350, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(400, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(450, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(500, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(550, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(600, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(650, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(700, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(750, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(800, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(850, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(900, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(950, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(1000, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(1050, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(1100, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-new Tile(1150, 300, 50, 50, false, true, Engine.overworldObjectSprites);
-*/
-  static load(level) {
-    let levelMap = Level.levels[level]
-    console.log(levelMap);
-    levelMap.forEach(map => {
-      for (const [key, value] of Object.entries(map)) {
-        new map[key].type(map[key].x * 50, map[key].y * 50, map[key].width * 50, map[key].height * 50, map[key].shadow, map[key].canCollide, map[key].sprites == "overworldObjectSprites" ? Engine.overworldObjectSprites : Engine.shadowworldObjectSprites)
+  static loadFromImage(level) {
+    let img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = `./assets/level${level}.png`;
+    console.log(img);
+    const colors = [];
+
+    img.onload = (e) => {
+      Engine.ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
+      Engine.ctx.drawImage(img, 0, 0);
+
+      for (let y = 0; y < img.height; y++) {
+        for (let x = 0; x < img.width; x++) {
+          const pixelData = Engine.ctx.getImageData(x, y, 1, 1).data;
+          const color = `rgb(${pixelData[0]}, ${pixelData[1]}, ${pixelData[2]})`;
+          colors.push({ x, y, color });
+        }
       }
-    })
+
+      colors.forEach(pixel => {
+        if (pixel.color == "rgb(0, 0, 0)") {
+          new Tile(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites);
+        }
+
+        else if (pixel.color == "rgb(50, 0, 0)") {
+          new Tile(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites);
+        }
+
+      })
+    }
   }
 }
