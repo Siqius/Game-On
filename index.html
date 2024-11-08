@@ -3,13 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="style.css" />
     <title>GameOn</title>
   </head>
   <body>
-    <canvas style="border: 1px solid black" width="1500" height="700"></canvas>
+    <div class="menu-container">
+      <h1 class="game-title">Awesome Game</h1>
+
+      <div class="slider-container">
+        <label for="master-volume">Master Volume</label>
+        <input type="range" id="master-volume" min="0" max="100" value="50" />
+      </div>
+
+      <button class="play-button" onclick="startGame()">Play</button>
+    </div>
+    <div id="canvas-div"><canvas width="1500" height="700"></canvas></div>
     <script src="gameobject.js"></script>
+    <script src="buttons.js"></script>
+    <script src="linkedObjects.js"></script>
     <script src="tiles.js"></script>
     <script src="images.js"></script>
+    <script src="audios.js"></script>
     <script src="player.js"></script>
     <script src="controls.js"></script>
     <script src="engine.js"></script>

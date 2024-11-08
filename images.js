@@ -10,10 +10,14 @@ class Images {
 
   static objectSprites = {
     "overworld": {
-      "tile": "./assets/tile.png"
+      "tile": "./assets/tile.png",
+      "unpressedButton": "./assets/unpressedButton.png",
+      "pressedButton": "./assets/pressedButton.png",
     },
     "shadowworld": {
-      "tile": "./assets/shadowTile.png"
+      "tile": "./assets/shadowTile.png",
+      "unpressedButton": "./assets/unpressedButton.png",
+      "pressedButton": "./assets/pressedButton.png"
     }
   }
 

@@ -1,11 +1,15 @@
 class Engine {
   // declare static game variables
-  static frameRate = 30;
+  static timeBetweenFramesInMs = 40;
+  static frameRate = 1000 / Engine.timeBetweenFramesInMs;
+  static frame = 0;
   static running = true;
   static canvas = document.querySelector("canvas");
-  static ctx = Engine.canvas.getContext("2d");
+  static ctx = Engine.canvas.getContext("2d", { willReadFrequently: true });
   static players = [];
   static gameObjects = [];
+  static buttons = [];
+  static linkedObjects = [];
   static playerOne;
   static playerTwo;
   static active;
@@ -22,7 +26,6 @@ class Engine {
   static worldSwitchTimer = 2000;
   static gravityStrength = 1;
   static backgroundImage;
-  static shouldMoveTiles = true;
 
   //static method to initialize the engine
   static init() {
@@ -46,6 +49,8 @@ class Engine {
 
   //gameloop, self explanatory
   static gameLoop() {
+    Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1;
+    console.log(Engine.frame);
     let start = Engine.getTime();
 
     Engine.superMove();
@@ -67,9 +72,13 @@ class Engine {
 
   static superRender(ctx) {
     ctx.drawImage(Engine.backgroundImage, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
+
+    //render gameObjects 
     Engine.gameObjects.forEach(object => {
       object.render(ctx);
     });
+
+    //render players
     Engine.players.forEach(player => {
       player.render(ctx);
     })
@@ -125,8 +134,22 @@ class Engine {
   }
 
   static isCollidingWithWall(player, object) {
-    if (!(player.canCollide && object.canCollide)) return;
-    if (player.shadow != object.shadow) return;
+    if (!(player.canCollide && object.canCollide)) return false;
+    if (player.shadow != object.shadow) return false;
+
+    if (player.shadow) {
+      let isOverlappingHorizontally =
+        player.x < object.x + object.width &&
+        player.x + player.width > object.x;
+
+      let isOverlappingVertically =
+        player.y < object.y + object.height &&
+        player.y + player.height > object.y;
+
+      if (isOverlappingHorizontally && isOverlappingVertically)
+        return isOverlappingHorizontally && isOverlappingVertically;
+    }
+
     let isOverlappingHorizontally =
       player.x < object.x + object.width &&
       player.x + player.width > object.x;
@@ -135,6 +158,7 @@ class Engine {
       player.y < object.y + object.height &&
       player.y + player.height > object.y;
 
-    return isOverlappingHorizontally && isOverlappingVertically;
+    if (isOverlappingHorizontally && isOverlappingVertically)
+      return isOverlappingHorizontally && isOverlappingVertically
   }
 }
