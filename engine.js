@@ -29,6 +29,8 @@ class Engine {
 
   //static method to initialize the engine
   static init() {
+    document.querySelector("#canvas-div").style.display = "block";
+    AudioLoader.loadAudios();
     //load all images from sources
     Images.init();
     //load the first level (will be revamped in the future)

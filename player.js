@@ -109,10 +109,11 @@ class Player extends GameObject {
         this.yVel = 0;
         this.y = !this.shadow ? object.y - this.height : object.y + object.height;
         if (this != Engine.active) return;
-        //jumping
         if (Engine.playerControls.controls.jump) {
           this.status = "jumping";
           this.yVel -= this.jumpPower * this.gravityMultiplier;
+          AudioLoader.audios.sfx.jump.cloneNode(true).play();
+          console.log(AudioLoader.audios.sfx.jump.volume);
         }
 
         if (object instanceof Button) {
