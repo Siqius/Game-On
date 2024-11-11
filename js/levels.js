@@ -19,7 +19,7 @@ class Level {
         }
       }
       colors.forEach(pixel => {
-        console.log(pixel.blue);
+
         if (pixel.color == "rg(0, 150)") {
           new Tile(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites);
         }
@@ -37,19 +37,27 @@ class Level {
         }
 
         else if (pixel.color == "rg(200, 0)") {
-          new linkedObject(pixel.x * 50, pixel.y * 50 + 10_000, 50, 50, false, true, Engine.overworldObjectSprites, "support", pixel.blue);
+          new LinkedObject(pixel.x * 50, pixel.y * 50 + 10_000, 50, 50, false, true, Engine.overworldObjectSprites, "support", pixel.blue);
         }
 
         else if (pixel.color == "rg(250, 0)") {
-          new linkedObject(pixel.x * 50, pixel.y * 50 + 10_000, 50, 50, true, true, Engine.shadowworldObjectSprites, "support", pixel.blue);
+          new LinkedObject(pixel.x * 50, pixel.y * 50 + 10_000, 50, 50, true, true, Engine.shadowworldObjectSprites, "support", pixel.blue);
         }
 
         else if (pixel.color == "rg(0, 50)") {
-          new linkedObject(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites, "obstacle", pixel.blue);
+          new LinkedObject(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites, "obstacle", pixel.blue);
         }
 
         else if (pixel.color == "rg(0, 100)") {
-          new linkedObject(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites, "obstacle", pixel.blue);
+          new LinkedObject(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites, "obstacle", pixel.blue);
+        }
+
+        else if (pixel.color == "rg(0, 200)") {
+          new Spike(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites);
+        }
+
+        else if (pixel.color == "rg(0, 250)") {
+          new Spike(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites)
         }
       })
     }

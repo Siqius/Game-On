@@ -1,7 +1,8 @@
 class AudioLoader {
   static audios = {
     "sfx": {
-      "jump": "./assets/jump.mp3"
+      "jump": "./assets/jump.mp3",
+      "walk": "./assets/walk.mp3"
     },
     "music": {
     }
@@ -10,7 +11,6 @@ class AudioLoader {
 
   static loadAudios() {
     let sfxVolume = document.querySelector("#sfx-volume").value / 100;
-    let musicVolume = document.querySelector("#music-volume").value / 100;
     for (const [key, value] of Object.entries(AudioLoader.audios.sfx)) {
       let audio = new Audio(AudioLoader.audios.sfx[key]);
       audio.volume = sfxVolume;
@@ -18,6 +18,7 @@ class AudioLoader {
     }
 
     for (const [key, value] of Object.entries(AudioLoader.audios.music)) {
+      let musicVolume = document.querySelector("#music-volume").value / 100;
       let audio = new Audio(AudioLoader.audios.music[key]);
       audio.volume = musicVolume;
       AudioLoader.audios.music[key] = audio;

@@ -11,6 +11,10 @@ class Player extends GameObject {
     this.status = "idle";
     this.direction = "none";
     this.animationFrame = 0;
+    this.timeSinceLastRunningSound = 0;
+    this.runningSoundDelay = 800;
+    this.walkingAudioClone = AudioLoader.audios.sfx.walk.cloneNode(true);
+    this.walkingAudioClone.volume = AudioLoader.audios.sfx.walk.volume;
 
     Engine.players.push(this);
   }
@@ -22,7 +26,6 @@ class Player extends GameObject {
     //checks for swap
     if (Engine.playerControls.controls.swap) {
       if (Engine.getTime() - Engine.timeSinceWorldSwitch < Engine.worldSwitchDelay) return;
-      Engine.running = false;
 
       Engine.timeSinceWorldSwitch = Engine.getTime();
       let tempxVel = Engine.active.xVel;
@@ -42,6 +45,10 @@ class Player extends GameObject {
         delete Engine.playerControls.keys["w"];
       }
 
+      let temp = Engine.playerControls.keys["a"];
+      Engine.playerControls.keys["a"] = Engine.playerControls.keys["d"];
+      Engine.playerControls.keys["d"] = temp;
+
       while (true) {
         let mult = 1
         let range = 0;
@@ -51,7 +58,6 @@ class Player extends GameObject {
           range = 400;
         }
 
-        console.log(mult);
         Engine.globalY += 20 * mult;
 
         if (Math.abs(Engine.globalY) == range) {
@@ -60,7 +66,6 @@ class Player extends GameObject {
 
         await Engine.sleep(Engine.worldSwitchTimer / 100);
       }
-      Engine.running = true;
     }
 
     //movement keys, if both are held down then dont move
@@ -100,20 +105,28 @@ class Player extends GameObject {
     //gravity
     this.yVel += Engine.gravityStrength * this.gravityMultiplier;
     this.y += this.yVel > 0.5 || this.yVel < -0.5 ? this.yVel : 0;
+
     //checks floor collision
+    let standingOnGround = false;
     Engine.gameObjects.forEach(object => {
-      let collidingWithGround = false;
       if (Engine.isStandingOn(this, object)) {
         if (this.status == "jumping") this.status = "idle";
-        collidingWithGround = true;
+        if (object instanceof Spike) {
+          console.log("HELLO");
+          Engine.stop();
+          return;
+        }
+        standingOnGround = true;
         this.yVel = 0;
         this.y = !this.shadow ? object.y - this.height : object.y + object.height;
         if (this != Engine.active) return;
         if (Engine.playerControls.controls.jump) {
+          standingOnGround = false;
           this.status = "jumping";
           this.yVel -= this.jumpPower * this.gravityMultiplier;
-          AudioLoader.audios.sfx.jump.cloneNode(true).play();
-          console.log(AudioLoader.audios.sfx.jump.volume);
+          let audioClone = AudioLoader.audios.sfx.jump.cloneNode(true);
+          audioClone.volume = AudioLoader.audios.sfx.jump.volume;
+          audioClone.play();
         }
 
         if (object instanceof Button) {
@@ -121,11 +134,15 @@ class Player extends GameObject {
         }
       } else {
         this.status == "jumping";
+        if (Engine.isTouchingCeiling(this, object)) {
+          this.yVel = 0;
+        }
       }
       if (object.shadow != Engine.active.shadow) return;
       if (this != Engine.active) return;
       object.x += this.speed * (this.xVel * - 1);
     })
+
     //checks wall collision
     let wallCollissionDetectedThisFrame = false;
     Engine.gameObjects.forEach(object => {
@@ -133,6 +150,11 @@ class Player extends GameObject {
         if (object.shadow != Engine.active.shadow) return;
         if (this != Engine.active) return;
         wallCollissionDetectedThisFrame = true;
+        if (object instanceof Spike) {
+          console.log("HELLO");
+          Engine.stop();
+          return;
+        }
       }
     })
     if (wallCollissionDetectedThisFrame) {
@@ -143,33 +165,39 @@ class Player extends GameObject {
       })
     }
 
-    //this.animate();  
+    //animate aswell as play walking sounds
+    this.animate(standingOnGround);
   }
 
-  animate() {
+  animate(standingOnGround) {
+    if (this != Engine.active) return;
     if (Engine.frame % 5 != 0) return;
 
     if (this.status == "jumping") {
       if (this.yVel < -2) {
-        this.activeImage = this.sprites.rising;
+        //this.activeImage = this.sprites.rising;
       } else if (this.yVel > 2) {
-        this.activeImage = this.sprites.falling;
+        //this.activeImage = this.sprites.falling;
       } else {
-        this.activeImage = this.sprites.still;
+        //this.activeImage = this.sprites.still;
       }
     } else if (this.status == "running") {
+      if (Engine.getTime() - this.timeSinceLastRunningSound > this.runningSoundDelay && standingOnGround) {
+        this.walkingAudioClone.play();
+        this.timeSinceLastRunningSound = Engine.getTime();
+      }
       if (this.xVel == 1) {
         if (this.direction != "right") return;
-        if (this.animationFrame == 0) this.activeImage = this.sprites.runningRight1;
-        else if (this.animationFrame == 1) this.activeImage = this.sprites.runningRight2;
+        //if (this.animationFrame == 0) this.activeImage = this.sprites.runningRight1;
+        //else if (this.animationFrame == 1) this.activeImage = this.sprites.runningRight2;
       } else if (this.xVel == -1) {
         if (this.direction != "left") return;
-        if (this.animationFrame == 0) this.activeImage = this.sprites.runningLeft1;
-        else if (this.animationFrame == 1) this.activeImage = this.sprites.runningLeft2;
+        //if (this.animationFrame == 0) this.activeImage = this.sprites.runningLeft1;
+        //else if (this.animationFrame == 1) this.activeImage = this.sprites.runningLeft2;
       }
     } else if (this.status == "idle") {
-      if (this.animationFrame == 0) this.activeImage = this.sprites.idleAnimation1;
-      else if (this.animationFrame == 1) this.activeImage = this.sprites.idleAnimation2;
+      //if (this.animationFrame == 0) this.activeImage = this.sprites.idleAnimation1;
+      //else if (this.animationFrame == 1) this.activeImage = this.sprites.idleAnimation2;
     }
     this.animationFrame = this.animationFrame + 1 % 2 == 0 ? 0 : this.animationFrame + 1;
   }

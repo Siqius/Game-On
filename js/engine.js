@@ -16,52 +16,111 @@ class Engine {
   static timeSinceWorldSwitch = 0;
   static worldSwitchDelay = 1000;
   static worldSwitchTimeout = 1000;
-  static playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
+  static playerControls = new Controls({ "a": "left", "d": "right", "w": "jump", " ": "swap" });
   static overworldCharacterSprites;
   static shadowWorldCharacterSprites;
   static overworldObjectSprites;
   static shadowworldObjectSprites;
-  static levelMap;
   static globalY = 0;
   static worldSwitchTimer = 2000;
   static gravityStrength = 1;
   static backgroundImage;
+  static currentLevel = 1;
 
   //static method to initialize the engine
-  static init() {
+  static async init() {
+    document.querySelector(".menu-container").style.display = "none";
     document.querySelector("#canvas-div").style.display = "block";
     AudioLoader.loadAudios();
+
     //load all images from sources
-    Images.init();
+    await Images.init();
+
     //load the first level (will be revamped in the future)
-    Level.loadFromImage(1);
+    Level.loadFromImage(Engine.currentLevel);
 
     Engine.backgroundImage = new Image();
     Engine.backgroundImage.src = "./assets/background.png";
 
     //create the two characters, set the first one to be active
-    Engine.playerOne = new Player(150, 100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
+    Engine.playerOne = new Player(150, 300, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
     Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+    Engine.playerTwo = new Player(150, 750, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
 
     //initialize keylisteners and gameloop
     Engine.keyListeners();
     Engine.gameLoop();
   }
 
+  static restart() {
+    Engine.players = [];
+    Engine.gameObjects = [];
+    Engine.buttons = [];
+    Engine.linkedObjects = [];
+    Engine.playerOne;
+    Engine.playerTwo;
+    Engine.active;
+    Engine.playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
+    Engine.globalY = 0;
+    Engine.gravityStrength = 1;
+
+    Level.loadFromImage(Engine.currentLevel);
+
+    //create the two characters, set the first one to be active
+    Engine.playerOne = new Player(150, -100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
+    Engine.active = Engine.playerOne;
+    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+
+    document.querySelector(".game-over-container").style.display = "none";
+    document.querySelector("#canvas-div").style.display = "block";
+
+    Engine.running = true;
+    Engine.gameLoop();
+  }
+
+  static nextLevel() {
+    Engine.currentLevel += 1;
+
+    Engine.players = [];
+    Engine.gameObjects = [];
+    Engine.buttons = [];
+    Engine.linkedObjects = [];
+    Engine.playerOne;
+    Engine.playerTwo;
+    Engine.active;
+    Engine.playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
+    Engine.globalY = 0;
+    Engine.gravityStrength = 1;
+
+    Level.loadFromImage(Engine.currentLevel);
+
+    //create the two characters, set the first one to be active
+    Engine.playerOne = new Player(150, -100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
+    Engine.active = Engine.playerOne;
+    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+  }
+
+  static stop() {
+    Engine.running = false;
+    document.querySelector("#canvas-div").style.display = "none";
+    document.querySelector(".game-over-container").style.display = "block";
+  }
+
   //gameloop, self explanatory
   static gameLoop() {
     Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1;
-    console.log(Engine.frame);
     let start = Engine.getTime();
 
     Engine.superMove();
     Engine.superRender(Engine.ctx);
 
     // calculate when next frame should be handled
+    console.log("running")
     let end = Engine.getTime();
     let msToNextFrame = Engine.frameRate - (end - start);
-    setTimeout(Engine.gameLoop, msToNextFrame);
+    if (Engine.running) {
+      setTimeout(Engine.gameLoop, msToNextFrame);
+    }
   }
 
   static getTime() {
@@ -106,6 +165,33 @@ class Engine {
 
       Engine.playerControls.controls[Engine.playerControls.keys[button]] = false;
     });
+  }
+
+  static isTouchingCeiling(player, platform) {
+    if (!(player.canCollide && platform.canCollide)) return false;
+    if (player.shadow !== platform.shadow) return false;
+
+    if (player.shadow) {
+      let isOverlappingHorizontally =
+        player.x < platform.x + platform.width &&
+        player.x + player.width > platform.x;
+
+      const isTouchingVertically =
+        player.y + player.height >= platform.y &&
+        player.y + player.height <= platform.y + 25;
+
+      return isOverlappingHorizontally && isTouchingVertically && player.yVel > 0;
+    }
+
+    let isOverlappingHorizontally =
+      player.x < platform.x + platform.width &&
+      player.x + player.width > platform.x;
+
+    let isTouchingVertically =
+      player.y <= platform.y + platform.height &&
+      player.y >= platform.y + platform.height - 25;
+
+    return isOverlappingHorizontally && isTouchingVertically && player.yVel < 0;
   }
 
   static isStandingOn(player, platform) {

@@ -8,7 +8,7 @@
   </head>
   <body>
     <div class="menu-container">
-      <h1 class="game-title">Awesome Game</h1>
+      <h1 class="game-title">Rubert's Adventure</h1>
 
       <div class="slider-container">
         <label for="music-volume">Music Volume</label>
@@ -22,17 +22,23 @@
 
       <button class="play-button" onclick="startGame()">Play</button>
     </div>
+    <div class="game-over-container">
+      <h1 class="game-over-title">Game Over</h1>
+      <button class="retry-button" onclick="restartGame()">Retry</button>
+      <button class="menu-button" onclick="mainMenu()">Main Menu</button>
+    </div>
     <div id="canvas-div"><canvas width="1500" height="700"></canvas></div>
-    <script src="gameobject.js"></script>
-    <script src="buttons.js"></script>
-    <script src="linkedobjects.js"></script>
-    <script src="tiles.js"></script>
-    <script src="images.js"></script>
-    <script src="audioloader.js"></script>
-    <script src="player.js"></script>
-    <script src="controls.js"></script>
-    <script src="engine.js"></script>
-    <script src="levels.js"></script>
-    <script src="index.js"></script>
+    <script src="./js/gameobject.js"></script>
+    <script src="./js/spikes.js"></script>
+    <script src="./js/buttons.js"></script>
+    <script src="./js/linkedobjects.js"></script>
+    <script src="./js/tiles.js"></script>
+    <script src="./js/images.js"></script>
+    <script src="./js/audioloader.js"></script>
+    <script src="./js/player.js"></script>
+    <script src="./js/controls.js"></script>
+    <script src="./js/engine.js"></script>
+    <script src="./js/levels.js"></script>
+    <script src="./js/index.js"></script>
   </body>
 </html>

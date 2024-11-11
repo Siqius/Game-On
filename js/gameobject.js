@@ -1,7 +1,7 @@
 class GameObject {
   constructor(x, y, width, height, shadow, canCollide, sprites) {
-    this.x = x;
-    this.y = y;
+    this._x = x;
+    this._y = y;
     this.width = width;
     this.height = height;
     this.shadow = shadow;
@@ -9,6 +9,23 @@ class GameObject {
     this.sprites = sprites;
     if (this instanceof Player) return;
     Engine.gameObjects.push(this);
+  }
+
+  get x() {
+    return this._x;
+  }
+
+  get y() {
+    return this._y;
+  }
+
+  // Setters for x and y
+  set x(value) {
+    this._x = value;
+  }
+
+  set y(value) {
+    this._y = value;
   }
 
   //Renders all gameobjects

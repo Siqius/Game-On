@@ -89,3 +89,34 @@ input[type="range"]::-webkit-slider-thumb {
 .play-button:hover {
   background-color: #aa56d1;
 }
+
+.game-over-container {
+  display: none;
+  background-color: #2c2c3e;
+  padding: 40px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+}
+
+.game-over-title {
+  font-size: 48px;
+  color: #ff4c4c;
+  margin-bottom: 30px;
+}
+
+button {
+  background-color: #040339;
+  color: #fff;
+  font-size: 20px;
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin: 10px;
+}
+
+button:hover {
+  background-color: #aa56d1;
+}

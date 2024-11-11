@@ -1,10 +1,13 @@
-class linkedObject extends GameObject {
+class LinkedObject extends GameObject {
   constructor(x, y, width, height, shadow, canCollide, sprites, type, serialNumber) {
     super(x, y, width, height, shadow, canCollide, sprites);
 
     this.type = type;
-    this.activeImage = sprites.tile;
     this.serialNumber = serialNumber;
+    if (this.type == "obstacle")
+      this.activeImage = sprites.obstacleTile;
+    else
+      this.activeImage = sprites.supportTile;
 
     Engine.linkedObjects.push(this);
   }
