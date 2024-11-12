@@ -1,7 +1,7 @@
 class Engine {
   // declare static game variables
-  static timeBetweenFramesInMs = 40;
-  static frameRate = 1000 / Engine.timeBetweenFramesInMs;
+  static frameRate = 25;
+  static timeBetweenFramesInMs = 1000 / Engine.frameRate;
   static frame = 0;
   static running = true;
   static canvas = document.querySelector("canvas");
@@ -10,6 +10,7 @@ class Engine {
   static gameObjects = [];
   static buttons = [];
   static linkedObjects = [];
+  static portals = [];
   static playerOne;
   static playerTwo;
   static active;
@@ -22,9 +23,14 @@ class Engine {
   static overworldObjectSprites;
   static shadowworldObjectSprites;
   static globalY = 0;
+  static globalX = 0;
   static worldSwitchTimer = 2000;
   static gravityStrength = 1;
   static backgroundImage;
+  static borderImage;
+  static parallax1;
+  static parallax2;
+  static backgroundMusic;
   static currentLevel = 1;
 
   //static method to initialize the engine
@@ -36,11 +42,20 @@ class Engine {
     //load all images from sources
     await Images.init();
 
-    //load the first level (will be revamped in the future)
     Level.loadFromImage(Engine.currentLevel);
 
-    Engine.backgroundImage = new Image();
-    Engine.backgroundImage.src = "./assets/background.png";
+    Engine.parallax1 = new Image();
+    Engine.parallax1.src = "./assets/parallax1.png";
+    Engine.parallax2 = new Image();
+    Engine.parallax2.src = "./assets/parallax2.png";
+
+    //load backgroundmusic
+    Engine.backgroundMusic = AudioLoader.audios.music.backgroundmusic.cloneNode(true);
+    Engine.backgroundMusic.volume = AudioLoader.audios.music.backgroundmusic.volume;
+    Engine.backgroundMusic.play();
+    Engine.backgroundMusic.addEventListener("ended", function () {
+      Engine.backgroundMusicFunction()
+    }, false);
 
     //create the two characters, set the first one to be active
     Engine.playerOne = new Player(150, 300, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
@@ -52,15 +67,16 @@ class Engine {
     Engine.gameLoop();
   }
 
-  static restart() {
+  static reset() {
     Engine.players = [];
     Engine.gameObjects = [];
     Engine.buttons = [];
     Engine.linkedObjects = [];
+    Engine.portals = [];
     Engine.playerOne;
     Engine.playerTwo;
     Engine.active;
-    Engine.playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
+    Engine.playerControls = new Controls({ "a": "left", "d": "right", "w": "jump", "q": "attack", " ": "swap" });
     Engine.globalY = 0;
     Engine.gravityStrength = 1;
 
@@ -70,52 +86,50 @@ class Engine {
     Engine.playerOne = new Player(150, -100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
     Engine.active = Engine.playerOne;
     Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+  }
+
+  static restart() {
+    Engine.reset();
 
     document.querySelector(".game-over-container").style.display = "none";
     document.querySelector("#canvas-div").style.display = "block";
+
+    Engine.backgroundMusic.play();
+    Engine.backgroundMusic.addEventListener("ended", function () {
+      Engine.backgroundMusicFunction()
+    }, false);
 
     Engine.running = true;
     Engine.gameLoop();
   }
 
+
   static nextLevel() {
     Engine.currentLevel += 1;
-
-    Engine.players = [];
-    Engine.gameObjects = [];
-    Engine.buttons = [];
-    Engine.linkedObjects = [];
-    Engine.playerOne;
-    Engine.playerTwo;
-    Engine.active;
-    Engine.playerControls = new Controls({ "d": "left", "a": "right", "s": "jump", "q": "attack", " ": "swap" });
-    Engine.globalY = 0;
-    Engine.gravityStrength = 1;
-
-    Level.loadFromImage(Engine.currentLevel);
-
-    //create the two characters, set the first one to be active
-    Engine.playerOne = new Player(150, -100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
-    Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+    Engine.reset();
   }
 
   static stop() {
     Engine.running = false;
     document.querySelector("#canvas-div").style.display = "none";
     document.querySelector(".game-over-container").style.display = "block";
+    Engine.backgroundMusic.removeEventListener("ended", function () {
+      Engine.backgroundMusicFunction()
+    }, false);
   }
 
   //gameloop, self explanatory
   static gameLoop() {
-    Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1;
+    Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1; // count frames
     let start = Engine.getTime();
 
+    //logic
     Engine.superMove();
+
+    //render
     Engine.superRender(Engine.ctx);
 
     // calculate when next frame should be handled
-    console.log("running")
     let end = Engine.getTime();
     let msToNextFrame = Engine.frameRate - (end - start);
     if (Engine.running) {
@@ -132,7 +146,10 @@ class Engine {
   }
 
   static superRender(ctx) {
-    ctx.drawImage(Engine.backgroundImage, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
+    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height)
+    ctx.drawImage(Engine.overworldObjectSprites.border, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
+    //ctx.drawImage(Engine.parallax1, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
+    //ctx.drawImage(Engine.parallax2, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
 
     //render gameObjects 
     Engine.gameObjects.forEach(object => {
@@ -149,6 +166,11 @@ class Engine {
     Engine.players.forEach(player => {
       player.update();
     })
+  }
+
+  static backgroundMusicFunction() {
+    console.log("HELLO")
+    Engine.backgroundMusic.play();
   }
 
   static keyListeners() {

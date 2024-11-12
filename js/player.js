@@ -151,7 +151,9 @@ class Player extends GameObject {
         if (this != Engine.active) return;
         wallCollissionDetectedThisFrame = true;
         if (object instanceof Spike) {
-          console.log("HELLO");
+          let audio = AudioLoader.audios.sfx.spikeDeath.cloneNode(true);
+          audio.volume = AudioLoader.audios.sfx.spikeDeath.volume;
+          audio.play();
           Engine.stop();
           return;
         }
@@ -182,9 +184,10 @@ class Player extends GameObject {
         //this.activeImage = this.sprites.still;
       }
     } else if (this.status == "running") {
-      if (Engine.getTime() - this.timeSinceLastRunningSound > this.runningSoundDelay && standingOnGround) {
-        this.walkingAudioClone.play();
-        this.timeSinceLastRunningSound = Engine.getTime();
+      if (standingOnGround) {
+        let audio = AudioLoader.audios.sfx.walk.cloneNode(true);
+        audio.volume = AudioLoader.audios.sfx.walk.volume;
+        audio.play();
       }
       if (this.xVel == 1) {
         if (this.direction != "right") return;

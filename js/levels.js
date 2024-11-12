@@ -57,7 +57,15 @@ class Level {
         }
 
         else if (pixel.color == "rg(0, 250)") {
-          new Spike(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites)
+          new Spike(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites);
+        }
+
+        else if (pixel.color == "rg(50, 50)") {
+          new Portal(pixel.x * 50, pixel.y * 50, 50, 50, false, true, Engine.overworldObjectSprites);
+        }
+
+        else if (pixel.color == "rg(50, 100)") {
+          new Portal(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites);
         }
       })
     }

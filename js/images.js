@@ -15,7 +15,8 @@ class Images {
       "pressedButton": "./assets/pressedButton.png",
       "obstacleTile": "./assets/shadowworldObstacleTile.png",
       "supportTile": "./assets/shadowworldSupportTile.png",
-      "spike": "./assets/spikes.png"
+      "spike": "./assets/spikes.png",
+      "border": "./assets/border.png",
     },
     "shadowworld": {
       "tile": "./assets/shadowTile.png",

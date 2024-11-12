@@ -2,9 +2,12 @@ class AudioLoader {
   static audios = {
     "sfx": {
       "jump": "./assets/jump.mp3",
-      "walk": "./assets/walk.mp3"
+      "walk": "./assets/walk.mp3",
+      "buttonPress": "./assets/buttonPress.mp3",
+      "spikeDeath": "./assets/spikeDeath.mp3"
     },
     "music": {
+      "backgroundmusic": "./assets/backgroundmusic.mp3"
     }
   }
 

@@ -13,6 +13,10 @@ class Button extends GameObject {
     if (this.pressed) return;
     this.activeImage = this.sprites.pressedButton;
     this.pressed = true;
+    let buttonPress = AudioLoader.audios.sfx.buttonPress.cloneNode(true);
+    buttonPress.volume = AudioLoader.audios.sfx.buttonPress.volume;
+    buttonPress.play();
+
     let singleButton = true;
     Engine.buttons.forEach(button => {
 
