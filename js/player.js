@@ -35,6 +35,14 @@ class Player extends GameObject {
       Engine.active.xVel = tempxVel;
       Engine.playerControls.controls.jump = false;
 
+      if (Engine.active.shadow) {
+        document.querySelector("#movement").src = "./assets/shadowMovement.png";
+        document.querySelector("#worldjump").src = "./assets/shadowWorldJump.png";
+      } else {
+        document.querySelector("#movement").src = "./assets/movement.png";
+        document.querySelector("#worldjump").src = "./assets/worldJump.png";
+      }
+
       //swap jump key
       if (Engine.playerControls.keys.hasOwnProperty("s")) {
         Engine.playerControls.keys["w"] = Engine.playerControls.keys["s"];
@@ -55,7 +63,7 @@ class Player extends GameObject {
 
         if (Engine.active.shadow) {
           mult = -1;
-          range = 400;
+          range = 300;
         }
 
         Engine.globalY += 20 * mult;
@@ -112,7 +120,6 @@ class Player extends GameObject {
       if (Engine.isStandingOn(this, object)) {
         if (this.status == "jumping") this.status = "idle";
         if (object instanceof Spike) {
-          console.log("HELLO");
           Engine.stop();
           return;
         }
@@ -141,6 +148,10 @@ class Player extends GameObject {
       if (object.shadow != Engine.active.shadow) return;
       if (this != Engine.active) return;
       object.x += this.speed * (this.xVel * - 1);
+      if (this.shadow)
+        Engine.shadowworldX += this.speed * (this.xVel * -1);
+      else
+        Engine.overworldX += this.speed * (this.xVel * -1);
     })
 
     //checks wall collision
@@ -164,8 +175,30 @@ class Player extends GameObject {
         if (object.shadow != Engine.active.shadow) return;
         if (this != Engine.active) return;
         object.x -= this.speed * (this.xVel * -1);
+        if (this.shadow)
+          Engine.shadowworldX -= this.speed * (this.xVel * -1);
+        else
+          Engine.overworldX -= this.speed * (this.xVel * -1);
       })
     }
+
+    Engine.portals.forEach(portal => {
+      if (Engine.active.x + (Engine.active.width / 2) - portal.x + (portal.width / 2) < 100 && Engine.active.x + (Engine.active.width / 2) - portal.x + (portal.width / 2) > 0 && Engine.active.shadow == portal.shadow) {
+        if (!portal.shadow) {
+          if (Engine.active.y + (Engine.active.height / 2) - portal.y + (portal.height / 2) < 100 && Engine.active.y + (Engine.active.height / 2) - portal.y + (portal.height / 2) > -50) {
+            portal.playerInRange = true;
+          }
+          else
+            portal.playerInRange = false;
+        }
+        else {
+          if (portal.y + 50 > Engine.active.y && portal.y - 50 < Engine.active.y) {
+            portal.playerInRange = true;
+          } else
+            portal.playerInRange = false;
+        }
+      }
+    })
 
     //animate aswell as play walking sounds
     this.animate(standingOnGround);

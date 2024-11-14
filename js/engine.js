@@ -11,6 +11,7 @@ class Engine {
   static buttons = [];
   static linkedObjects = [];
   static portals = [];
+  static parallaxes = [];
   static playerOne;
   static playerTwo;
   static active;
@@ -22,8 +23,11 @@ class Engine {
   static shadowWorldCharacterSprites;
   static overworldObjectSprites;
   static shadowworldObjectSprites;
+  static cutScene;
+  static scenes;
   static globalY = 0;
-  static globalX = 0;
+  static overworldX = -10000;
+  static shadowworldX = -10000;
   static worldSwitchTimer = 2000;
   static gravityStrength = 1;
   static backgroundImage;
@@ -32,11 +36,14 @@ class Engine {
   static parallax2;
   static backgroundMusic;
   static currentLevel = 1;
+  static lastLevel = 5;
+  static cutSceneFrameInterval = 1000;
+  static timeSinceLastCutSceneFrame = 0;
 
   //static method to initialize the engine
   static async init() {
     document.querySelector(".menu-container").style.display = "none";
-    document.querySelector("#canvas-div").style.display = "block";
+    document.querySelector("#canvas-div").style.display = "flex";
     AudioLoader.loadAudios();
 
     //load all images from sources
@@ -44,10 +51,10 @@ class Engine {
 
     Level.loadFromImage(Engine.currentLevel);
 
-    Engine.parallax1 = new Image();
-    Engine.parallax1.src = "./assets/parallax1.png";
-    Engine.parallax2 = new Image();
-    Engine.parallax2.src = "./assets/parallax2.png";
+    Engine.cutScene = new Cutscene(Engine.scenes);
+
+    new Parallax(Engine.overworldObjectSprites.topParallax, 0.01, false);
+    new Parallax(Engine.shadowworldObjectSprites.bottomParallax, 0.01, true);
 
     //load backgroundmusic
     Engine.backgroundMusic = AudioLoader.audios.music.backgroundmusic.cloneNode(true);
@@ -79,20 +86,24 @@ class Engine {
     Engine.playerControls = new Controls({ "a": "left", "d": "right", "w": "jump", "q": "attack", " ": "swap" });
     Engine.globalY = 0;
     Engine.gravityStrength = 1;
+    Engine.cutScene.currentScene = 1;
+
+    document.querySelector("#movement").src = "./assets/movement.png";
+    document.querySelector("#worldjump").src = "./assets/worldJump.png";
 
     Level.loadFromImage(Engine.currentLevel);
 
     //create the two characters, set the first one to be active
-    Engine.playerOne = new Player(150, -100, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
+    Engine.playerOne = new Player(150, 300, 50, 50, false, true, 5, 15, Engine.overworldCharacterSprites);
     Engine.active = Engine.playerOne;
-    Engine.playerTwo = new Player(150, 1000, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
+    Engine.playerTwo = new Player(150, 750, 50, 50, true, true, 5, 15, Engine.shadowWorldCharacterSprites);
   }
 
   static restart() {
     Engine.reset();
 
     document.querySelector(".game-over-container").style.display = "none";
-    document.querySelector("#canvas-div").style.display = "block";
+    document.querySelector("#canvas-div").style.display = "flex";
 
     Engine.backgroundMusic.play();
     Engine.backgroundMusic.addEventListener("ended", function () {
@@ -105,6 +116,20 @@ class Engine {
 
 
   static nextLevel() {
+    let audio = AudioLoader.audios.sfx.nextLevel.cloneNode(true);
+    audio.volume = AudioLoader.audios.sfx.nextLevel.volume;
+    audio.play();
+
+    if (Engine.currentLevel == Engine.lastLevel) {
+      Engine.running = false;
+      document.querySelector("#canvas-div").style.display = "none";
+      document.querySelector(".win-container").style.display = "block";
+      Engine.backgroundMusic.removeEventListener("ended", function () {
+        Engine.backgroundMusicFunction()
+      }, false);
+      return;
+    }
+
     Engine.currentLevel += 1;
     Engine.reset();
   }
@@ -120,19 +145,19 @@ class Engine {
 
   //gameloop, self explanatory
   static gameLoop() {
-    Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1; // count frames
-    let start = Engine.getTime();
-
-    //logic
-    Engine.superMove();
-
-    //render
-    Engine.superRender(Engine.ctx);
-
-    // calculate when next frame should be handled
-    let end = Engine.getTime();
-    let msToNextFrame = Engine.frameRate - (end - start);
     if (Engine.running) {
+      Engine.frame = Engine.frame % Engine.frameRate == 0 ? 1 : Engine.frame + 1; // count frames
+      let start = Engine.getTime();
+
+      //logic
+      Engine.superMove();
+
+      //render
+      Engine.superRender(Engine.ctx);
+
+      // calculate when next frame should be handled
+      let end = Engine.getTime();
+      let msToNextFrame = Engine.frameRate - (end - start);
       setTimeout(Engine.gameLoop, msToNextFrame);
     }
   }
@@ -146,10 +171,16 @@ class Engine {
   }
 
   static superRender(ctx) {
-    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height)
-    ctx.drawImage(Engine.overworldObjectSprites.border, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
-    //ctx.drawImage(Engine.parallax1, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
-    //ctx.drawImage(Engine.parallax2, 0, Engine.globalY, Engine.canvas.width, Engine.canvas.height + 400);
+    ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
+
+    if (Engine.cutScene.load) {
+      Engine.cutScene.loadScene();
+      return;
+    }
+
+    Engine.parallaxes.forEach(parallax => {
+      parallax.render(ctx);
+    })
 
     //render gameObjects 
     Engine.gameObjects.forEach(object => {
@@ -160,6 +191,23 @@ class Engine {
     Engine.players.forEach(player => {
       player.render(ctx);
     })
+
+    Engine.portals.forEach(portal => {
+      if (Engine.active.shadow != portal.shadow) return;
+      if (!portal.activated)
+        if (Engine.active.x + (Engine.active.width / 2) - portal.x + (portal.width / 2) < 100 && Engine.active.x + (Engine.active.width / 2) - portal.x + (portal.width / 2) > 0 && Engine.active.shadow == portal.shadow) {
+          if (portal.shadow) {
+            if (portal.y + 50 > Engine.active.y && portal.y - 50 < Engine.active.y) {
+              Engine.ctx.drawImage(Engine.overworldObjectSprites.portalPopup, portal.x - 25, portal.y + 50 + Engine.globalY);
+            }
+          } else {
+            if (Engine.active.y + (Engine.active.height / 2) - portal.y + (portal.height / 2) < 100 && Engine.active.y + (Engine.active.height / 2) - portal.y + (portal.height / 2) > -50) {
+              Engine.ctx.drawImage(Engine.overworldObjectSprites.portalPopup, portal.x - 25, portal.y - 50);
+            }
+          }
+        }
+    })
+    ctx.drawImage(Engine.overworldObjectSprites.splitter, 0, (Engine.globalY + ((Engine.canvas.height + 300) / 2)) - Engine.overworldObjectSprites.splitter.height / 2);
   }
 
   static superMove() {
@@ -169,16 +217,22 @@ class Engine {
   }
 
   static backgroundMusicFunction() {
-    console.log("HELLO")
     Engine.backgroundMusic.play();
   }
 
   static keyListeners() {
     document.addEventListener("keydown", event => {
       let button = event.key.toLowerCase();
-      if (!(button in Engine.playerControls.keys)) return;
-
-      Engine.playerControls.controls[Engine.playerControls.keys[button]] = true;
+      if (button in Engine.playerControls.keys)
+        Engine.playerControls.controls[Engine.playerControls.keys[button]] = true;
+      else if (button == "e") {
+        Engine.portals.forEach(portal => {
+          portal.activate();
+        })
+      }
+      if (Engine.getTime() - Engine.timeSinceLastCutSceneFrame > Engine.cutSceneFrameInterval) {
+        Engine.cutScene.nextScene();
+      }
     });
 
     document.addEventListener("keyup", event => {

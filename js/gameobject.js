@@ -44,5 +44,9 @@ class GameObject {
     }
     ctx.drawImage(this.activeImage, this.x, this.y, this.width, this.height);
     this.y -= Engine.globalY;
+
+    if (!(this instanceof Portal)) return;
+    if (!this.playerInRange) return;
+    //draw image "E to activate"
   }
 }

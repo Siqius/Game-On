@@ -68,6 +68,7 @@ class Level {
           new Portal(pixel.x * 50, pixel.y * 50, 50, 50, true, true, Engine.shadowworldObjectSprites);
         }
       })
+      Engine.ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
     }
   }
 }

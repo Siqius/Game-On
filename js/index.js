@@ -3,7 +3,7 @@ function startGame() {
 }
 
 function restartGame() {
-  Engine.restart() //Restarts the game
+  Engine.restart();
 }
 
 function mainMenu() {

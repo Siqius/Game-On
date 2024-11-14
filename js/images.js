@@ -15,8 +15,12 @@ class Images {
       "pressedButton": "./assets/pressedButton.png",
       "obstacleTile": "./assets/shadowworldObstacleTile.png",
       "supportTile": "./assets/shadowworldSupportTile.png",
-      "spike": "./assets/spikes.png",
+      "spike": "./assets/overworldSpikes.png",
       "border": "./assets/border.png",
+      "topParallax": "./assets/topParallax.png",
+      "portal": "./assets/overworldPortal.png",
+      "splitter": "./assets/splitter.png",
+      "portalPopup": "./assets/portalPopup.png"
     },
     "shadowworld": {
       "tile": "./assets/shadowTile.png",
@@ -24,7 +28,12 @@ class Images {
       "pressedButton": "./assets/shadowPressedButton.png",
       "obstacleTile": "./assets/overworldObstacleTile.png",
       "supportTile": "./assets/overworldSupportTile.png",
-      "spike": "./assets/spikes.png"
+      "spike": "./assets/shadowworldSpikes.png",
+      "bottomParallax": "./assets/bottomParallax.png",
+      "portal": "./assets/shadowworldPortal.png"
+    },
+    "scenes": {
+
     }
   }
 
@@ -35,13 +44,15 @@ class Images {
       Images.loadSprites(Images.characterSprites.overworld),
       Images.loadSprites(Images.characterSprites.shadowworld),
       Images.loadSprites(Images.objectSprites.overworld),
-      Images.loadSprites(Images.objectSprites.shadowworld)
+      Images.loadSprites(Images.objectSprites.shadowworld),
+      Images.loadSprites(Images.objectSprites.scenes)
     ]);
 
     Engine.overworldCharacterSprites = Images.characterSprites.overworld;
     Engine.shadowWorldCharacterSprites = Images.characterSprites.shadowworld;
     Engine.overworldObjectSprites = Images.objectSprites.overworld;
     Engine.shadowworldObjectSprites = Images.objectSprites.shadowworld;
+    Engine.scenes = Images.objectSprites.scenes;
   }
 
   static loadSprites(spriteObject) {

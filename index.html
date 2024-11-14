@@ -7,29 +7,51 @@
     <title>GameOn</title>
   </head>
   <body>
-    <div class="menu-container">
-      <h1 class="game-title">Rubert's Adventure</h1>
+    <div class="main-container">
+      <div class="menu-container">
+        <h1 class="game-title">Crystal Adventure</h1>
 
-      <div class="slider-container">
-        <label for="music-volume">Music Volume</label>
-        <input type="range" id="music-volume" min="0" max="100" value="50" />
+        <div class="slider-container">
+          <label for="music-volume">Music Volume</label>
+          <input type="range" id="music-volume" min="0" max="100" value="50" />
+        </div>
+
+        <div class="slider-container">
+          <label for="sfc-volume">Sfx Volume</label>
+          <input type="range" id="sfx-volume" min="0" max="100" value="50" />
+        </div>
+
+        <button class="play-button" onclick="startGame()">Play</button>
       </div>
-
-      <div class="slider-container">
-        <label for="sfc-volume">Sfx Volume</label>
-        <input type="range" id="sfx-volume" min="0" max="100" value="50" />
+      <div class="win-container">
+        <h1 class="win-title">You won!</h1>
+        <button class="menu-button" onclick="mainMenu()">Main Menu</button>
       </div>
-
-      <button class="play-button" onclick="startGame()">Play</button>
+      <div class="game-over-container">
+        <h1 class="game-over-title">Game Over</h1>
+        <button class="menu-button" onclick="restartGame()">Retry</button>
+        <button class="menu-button" onclick="mainMenu()">Main Menu</button>
+      </div>
     </div>
-    <div class="game-over-container">
-      <h1 class="game-over-title">Game Over</h1>
-      <button class="retry-button" onclick="restartGame()">Retry</button>
-      <button class="menu-button" onclick="mainMenu()">Main Menu</button>
+    <div id="canvas-div">
+      <canvas width="1200" height="700"></canvas>
+      <div>
+        <img
+          id="movement"
+          src="./assets/movement.png"
+          alt="Movement keybinds"
+        />
+        <img
+          id="worldjump"
+          src="./assets/worldjump.png"
+          alt="Worldjumping keybind"
+        />
+      </div>
     </div>
-    <div id="canvas-div"><canvas width="1500" height="700"></canvas></div>
-    <script src="./js/portals.js"></script>
+    <script src="./js/cutscene.js"></script>
     <script src="./js/gameobject.js"></script>
+    <script src="./js/parallax.js"></script>
+    <script src="./js/portals.js"></script>
     <script src="./js/spikes.js"></script>
     <script src="./js/buttons.js"></script>
     <script src="./js/linkedobjects.js"></script>
