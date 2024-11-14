@@ -23,7 +23,7 @@ class Engine {
   static shadowWorldCharacterSprites;
   static overworldObjectSprites;
   static shadowworldObjectSprites;
-  static cutScene;
+  //static cutScene;
   static scenes;
   static globalY = 0;
   static overworldX = -10000;
@@ -37,8 +37,8 @@ class Engine {
   static backgroundMusic;
   static currentLevel = 1;
   static lastLevel = 5;
-  static cutSceneFrameInterval = 1000;
-  static timeSinceLastCutSceneFrame = 0;
+  //static cutSceneFrameInterval = 1000;
+  //static timeSinceLastCutSceneFrame = 0;
 
   //static method to initialize the engine
   static async init() {
@@ -51,7 +51,7 @@ class Engine {
 
     Level.loadFromImage(Engine.currentLevel);
 
-    Engine.cutScene = new Cutscene(Engine.scenes);
+    //Engine.cutScene = new Cutscene(Engine.scenes); not used since cutscenes werent made from within our group
 
     new Parallax(Engine.overworldObjectSprites.topParallax, 0.01, false);
     new Parallax(Engine.shadowworldObjectSprites.bottomParallax, 0.01, true);
@@ -85,8 +85,10 @@ class Engine {
     Engine.active;
     Engine.playerControls = new Controls({ "a": "left", "d": "right", "w": "jump", "q": "attack", " ": "swap" });
     Engine.globalY = 0;
+    Engine.overworldX = 0;
+    Engine.shadowworldX = 0;
     Engine.gravityStrength = 1;
-    Engine.cutScene.currentScene = 1;
+    //Engine.cutScene.currentScene = 1;
 
     document.querySelector("#movement").src = "./assets/movement.png";
     document.querySelector("#worldjump").src = "./assets/worldJump.png";
@@ -173,10 +175,12 @@ class Engine {
   static superRender(ctx) {
     ctx.clearRect(0, 0, Engine.canvas.width, Engine.canvas.height);
 
+    /*
     if (Engine.cutScene.load) {
       Engine.cutScene.loadScene();
       return;
     }
+    */
 
     Engine.parallaxes.forEach(parallax => {
       parallax.render(ctx);
@@ -207,6 +211,11 @@ class Engine {
           }
         }
     })
+    if (Engine.active.shadow) {
+      ctx.drawImage(Engine.overworldObjectSprites.mirror, 0, 0, Engine.canvas.width, (Engine.globalY + ((Engine.canvas.height + 300) / 2)));
+    } else {
+      ctx.drawImage(Engine.overworldObjectSprites.mirror, 0, (Engine.globalY + ((Engine.canvas.height + 300) / 2)), Engine.canvas.width, 1000);
+    }
     ctx.drawImage(Engine.overworldObjectSprites.splitter, 0, (Engine.globalY + ((Engine.canvas.height + 300) / 2)) - Engine.overworldObjectSprites.splitter.height / 2);
   }
 
@@ -230,9 +239,11 @@ class Engine {
           portal.activate();
         })
       }
+      /*
       if (Engine.getTime() - Engine.timeSinceLastCutSceneFrame > Engine.cutSceneFrameInterval) {
         Engine.cutScene.nextScene();
       }
+        */
     });
 
     document.addEventListener("keyup", event => {
@@ -280,7 +291,7 @@ class Engine {
 
       let isTouchingVertically =
         player.y <= platform.y + platform.height &&
-        player.y >= platform.y + platform.height - 25; // 5 pixels as margin
+        player.y >= platform.y + platform.height - 25;
 
       return isOverlappingHorizontally && isTouchingVertically;
     }
@@ -292,7 +303,7 @@ class Engine {
 
     let isTouchingVertically =
       player.y + player.height >= platform.y &&
-      player.y + player.height <= platform.y + 25; // 5 pixels as margin
+      player.y + player.height <= platform.y + 25;
 
     return isOverlappingHorizontally && isTouchingVertically && player.yVel >= 0;
   }

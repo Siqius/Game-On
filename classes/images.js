@@ -20,7 +20,8 @@ class Images {
       "topParallax": "./assets/topParallax.png",
       "portal": "./assets/overworldPortal.png",
       "splitter": "./assets/splitter.png",
-      "portalPopup": "./assets/portalPopup.png"
+      "portalPopup": "./assets/portalPopup.png",
+      "mirror": "./assets/mirror.png"
     },
     "shadowworld": {
       "tile": "./assets/shadowTile.png",
@@ -31,9 +32,6 @@ class Images {
       "spike": "./assets/shadowworldSpikes.png",
       "bottomParallax": "./assets/bottomParallax.png",
       "portal": "./assets/shadowworldPortal.png"
-    },
-    "scenes": {
-
     }
   }
 
@@ -45,14 +43,12 @@ class Images {
       Images.loadSprites(Images.characterSprites.shadowworld),
       Images.loadSprites(Images.objectSprites.overworld),
       Images.loadSprites(Images.objectSprites.shadowworld),
-      Images.loadSprites(Images.objectSprites.scenes)
     ]);
 
     Engine.overworldCharacterSprites = Images.characterSprites.overworld;
     Engine.shadowWorldCharacterSprites = Images.characterSprites.shadowworld;
     Engine.overworldObjectSprites = Images.objectSprites.overworld;
     Engine.shadowworldObjectSprites = Images.objectSprites.shadowworld;
-    Engine.scenes = Images.objectSprites.scenes;
   }
 
   static loadSprites(spriteObject) {
